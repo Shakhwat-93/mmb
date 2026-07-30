@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.vercel/
+.devserver.out.log
+.devserver.err.log
+*.tsbuildinfo
