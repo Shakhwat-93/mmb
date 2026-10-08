@@ -106,7 +106,7 @@ const Hero = () => {
                 <span className="text-2xl font-black text-gray-900">Offer Price: ৳৫৮০ মাত্র</span>
               </div>
               <div className="bg-accent text-white px-3 py-1 rounded-lg text-xs font-black uppercase animate-bounce">
-                46% OFF
+                28% OFF
               </div>
             </motion.div>
 

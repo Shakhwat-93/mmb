@@ -59,7 +59,7 @@ const PopupOffer = () => {
                   <div className="inline-flex items-center gap-1.5 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
                     <Gift size={14} /> Flash Sale
                   </div>
-                  <h3 className="text-white font-extrabold text-2xl leading-none">৪৬% মেগা ডিসকাউন্ট!</h3>
+                  <h3 className="text-white font-extrabold text-2xl leading-none">২৮% মেগা ডিসকাউন্ট!</h3>
                 </div>
               </div>
 
