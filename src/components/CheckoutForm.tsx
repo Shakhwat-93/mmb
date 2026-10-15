@@ -158,10 +158,13 @@ const CheckoutForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const total = productSubtotal + shippingCost;
 
   const incompleteOrderIdRef = useRef<string | null>(null);
+  const isSavingIncompleteRef = useRef<boolean>(false);
 
   const saveIncompleteOrder = async (currentName: string, currentPhone: string, currentAddress: string) => {
+    if (isSubmitting || isSavingIncompleteRef.current) return;
     if (!currentPhone && !currentName) return;
 
+    isSavingIncompleteRef.current = true;
     const totalItems = selectedItems.reduce((sum, item) => sum + cart[item.id], 0);
     const orderedItemsJson = selectedItems.map(item => ({
       name: item.name,
@@ -177,9 +180,9 @@ const CheckoutForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           .insert([
             {
               id: newOrderId,
-              customer_name: currentName || null,
-              phone: currentPhone || null,
-              address: currentAddress || null,
+              customer_name: currentName?.trim() || null,
+              phone: currentPhone?.trim() || null,
+              address: currentAddress?.trim() || null,
               product_name: "Smart Money Management Bag",
               ordered_items: orderedItemsJson,
               amount: total,
@@ -216,9 +219,9 @@ const CheckoutForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         const { error } = await supabase
           .from('orders')
           .update({
-            customer_name: currentName || null,
-            phone: currentPhone || null,
-            address: currentAddress || null,
+            customer_name: currentName?.trim() || null,
+            phone: currentPhone?.trim() || null,
+            address: currentAddress?.trim() || null,
             ordered_items: orderedItemsJson,
             amount: total,
             items: totalItems,
@@ -234,6 +237,8 @@ const CheckoutForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       }
     } catch (err) {
       console.error("Failed to save incomplete order:", err);
+    } finally {
+      isSavingIncompleteRef.current = false;
     }
   };
 

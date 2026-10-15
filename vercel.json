@@ -2,5 +2,15 @@
   "framework": "vite",
   "buildCommand": "npx vite build",
   "installCommand": "npm install",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/api/supabase/rest/v1/orders",
+      "destination": "/api/supabase/rest/v1/orders"
+    },
+    {
+      "source": "/api/supabase/:path*",
+      "destination": "/api/supabase"
+    }
+  ]
 }
