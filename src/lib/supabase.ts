@@ -2,13 +2,10 @@ import { createClient } from '@supabase/supabase-js';
 
 // Use proxy endpoint in browser environments to avoid Mixed Content (HTTPS -> HTTP) blocking
 const getSupabaseUrl = () => {
-  if (import.meta.env.VITE_SUPABASE_URL) {
-    return import.meta.env.VITE_SUPABASE_URL;
-  }
   if (typeof window !== 'undefined') {
     return `${window.location.origin}/api/supabase`;
   }
-  return 'http://supabasekong-a5tg2fvpwj6emkewfdknamid.187.77.159.209.sslip.io';
+  return import.meta.env.VITE_SUPABASE_URL || 'http://supabasekong-a5tg2fvpwj6emkewfdknamid.187.77.159.209.sslip.io';
 };
 
 const supabaseUrl = getSupabaseUrl();
