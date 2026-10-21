@@ -5,7 +5,8 @@
 import crypto from 'crypto';
 
 const DEFAULT_PIXEL_ID = '1015807421436461';
-const DEFAULT_ACCESS_TOKEN = 'EAA9aZA7khMiYBSFRYIDL5gxUn46o1CbXl7NhxUPty56ZAbvy8vrOCrUQT0HBKjFLqEe8CfX05IMB1HMsb2VxBrs84qvHzIKpqX6mRhLjxkF9iTM9ZC1RZBPSAP0pQO9ujgnYNgyyq6I3YpjTxAAZAiKqB3vxb31mtfazw3fKK3qKgZAVxxRvQE9CpG94PrMQZDZD';
+const DEFAULT_ACCESS_TOKEN = 'EAA9aZA7khMiYBS46ligaA51n3RRLSC4WLrRdGKAZBcqzEzr7C2x9laPjjqpZCNtbhQHyryqqBUobg07ZCZB6ZBCJniSB7d5rICDW6LvAjHEZB9PPt3ZCRoajwQxLRduLVk6EW5pAjouo4sB8oubrsce6tccOj187VFIzynh0OsgQF8ZCUUJUvKaDM7FznJ9ebQgZDZD';
+const DEFAULT_TEST_CODE = 'TEST5589';
 
 /**
  * Standard SHA-256 hash helper for normalized data.
@@ -91,7 +92,7 @@ export default async function handler(req, res) {
 
     // Only send test_event_code if explicitly provided in request body or explicit FB_TEST_EVENT_CODE
     // NEVER fall back to stale or hardcoded test codes, as invalid codes cause Meta to drop events from Test Events
-    const rawTestCode = req.body?.test_event_code || process.env.FB_TEST_EVENT_CODE || null;
+    const rawTestCode = req.body?.test_event_code || process.env.FB_TEST_EVENT_CODE || DEFAULT_TEST_CODE;
     const testEventCode = (typeof rawTestCode === 'string' && rawTestCode.trim().length > 0 && rawTestCode.trim() !== 'undefined' && rawTestCode.trim() !== 'null')
       ? rawTestCode.trim()
       : null;
