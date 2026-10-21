@@ -75,7 +75,7 @@ export default async function handler(req, res) {
   try {
     const pixelId = process.env.FB_PIXEL_ID || process.env.VITE_FB_PIXEL_ID || DEFAULT_PIXEL_ID;
     const accessToken = process.env.FB_ACCESS_TOKEN || process.env.VITE_FB_ACCESS_TOKEN || DEFAULT_ACCESS_TOKEN;
-    const testEventCode = process.env.FB_TEST_EVENT_CODE || process.env.VITE_FB_TEST_EVENT_CODE || req.body?.test_event_code || DEFAULT_TEST_CODE;
+    const testEventCode = req.body?.test_event_code || process.env.FB_TEST_EVENT_CODE || process.env.VITE_FB_TEST_EVENT_CODE || DEFAULT_TEST_CODE;
 
     if (!pixelId || !accessToken) {
       return res.status(500).json({
