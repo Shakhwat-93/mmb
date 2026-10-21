@@ -21,6 +21,34 @@ interface UserData {
 }
 
 /**
+ * Determines any active Meta test event code.
+ * Priority: URL param (?test_event_code=...) > sessionStorage > active env variable.
+ * Returns null if no test code is active, preventing stale test code errors.
+ */
+function getActiveTestCode(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const urlCode = new URLSearchParams(window.location.search).get('test_event_code');
+    if (urlCode && urlCode.trim() && urlCode.trim() !== 'undefined' && urlCode.trim() !== 'null') {
+      sessionStorage.setItem('meta_test_event_code', urlCode.trim());
+      return urlCode.trim();
+    }
+    const savedCode = sessionStorage.getItem('meta_test_event_code');
+    if (savedCode && savedCode.trim() && savedCode.trim() !== 'undefined' && savedCode.trim() !== 'null') {
+      return savedCode.trim();
+    }
+  } catch (e) {}
+
+  const envCode = import.meta.env.VITE_FB_TEST_EVENT_CODE;
+  // Ignore known expired codes like TEST84265
+  if (envCode && envCode.trim() && envCode.trim() !== 'TEST84265' && envCode.trim() !== 'undefined') {
+    return envCode.trim();
+  }
+
+  return null;
+}
+
+/**
  * Main Facebook Event Tracking Function (Fires Browser Pixel + Server CAPI).
  * Handled with proper deduplication using the exact same eventID, eventName, and testEventCode.
  */
@@ -30,10 +58,7 @@ export async function trackFacebookEvent(
   rawUserData: UserData = {},
   customData: any = {}
 ) {
-  // Determine active test event code (URL query param > Vite env > default TEST5589)
-  const testEventCode = (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('test_event_code') : null)
-    || import.meta.env.VITE_FB_TEST_EVENT_CODE
-    || 'TEST5589';
+  const testEventCode = getActiveTestCode();
 
   // Format custom data with guaranteed numeric value and ISO currency
   const formattedCustomData: Record<string, any> = {
@@ -74,7 +99,7 @@ export async function trackFacebookEvent(
 
         console.log(`[Meta Pixel] Browser event dispatched: ${eventName}`, {
           eventID: eventId,
-          test_event_code: testEventCode,
+          test_event_code: testEventCode || '(production mode)',
           data: formattedCustomData
         });
       } else {
@@ -90,7 +115,7 @@ export async function trackFacebookEvent(
     const fbp = getCookie('_fbp');
     const fbc = getCookie('_fbc') || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('fbclid') : null);
 
-    const payload = {
+    const payload: Record<string, any> = {
       event_name: eventName,
       event_id: eventId,
       event_source_url: typeof window !== 'undefined' ? window.location.href : '',
@@ -102,9 +127,12 @@ export async function trackFacebookEvent(
         fbp: fbp || undefined,
         fbc: fbc || undefined
       },
-      custom_data: formattedCustomData,
-      test_event_code: testEventCode
+      custom_data: formattedCustomData
     };
+
+    if (testEventCode) {
+      payload.test_event_code = testEventCode;
+    }
 
     const capiPromise = fetch('/api/meta-conversions', {
       method: 'POST',

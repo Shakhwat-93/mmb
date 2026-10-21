@@ -6,7 +6,6 @@ import crypto from 'crypto';
 
 const DEFAULT_PIXEL_ID = '1015807421436461';
 const DEFAULT_ACCESS_TOKEN = 'EAA9aZA7khMiYBSFRYIDL5gxUn46o1CbXl7NhxUPty56ZAbvy8vrOCrUQT0HBKjFLqEe8CfX05IMB1HMsb2VxBrs84qvHzIKpqX6mRhLjxkF9iTM9ZC1RZBPSAP0pQO9ujgnYNgyyq6I3YpjTxAAZAiKqB3vxb31mtfazw3fKK3qKgZAVxxRvQE9CpG94PrMQZDZD';
-const DEFAULT_TEST_CODE = 'TEST5589';
 
 /**
  * Standard SHA-256 hash helper for normalized data.
@@ -23,7 +22,9 @@ function sha256(val) {
  */
 function hashPhone(phone) {
   if (!phone || typeof phone !== 'string') return null;
-  const digitsOnly = phone.replace(/\D/g, '');
+  // Convert Bengali numerals if any
+  const normalizedPhone = phone.replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d).toString());
+  const digitsOnly = normalizedPhone.replace(/\D/g, '');
   if (!digitsOnly) return null;
 
   const hashes = [];
@@ -58,6 +59,18 @@ function hashName(fullName) {
   return { fn, ln };
 }
 
+/**
+ * Validate whether IP is a genuine public IP address (not loopback or private range)
+ */
+function isPublicIp(ip) {
+  if (!ip || typeof ip !== 'string') return false;
+  const clean = ip.trim();
+  if (clean === '127.0.0.1' || clean === '::1' || clean === 'localhost') return false;
+  if (clean.startsWith('10.') || clean.startsWith('192.168.') || clean.startsWith('169.254.')) return false;
+  if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(clean)) return false;
+  return true;
+}
+
 export default async function handler(req, res) {
   // CORS Preflight & Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -75,7 +88,13 @@ export default async function handler(req, res) {
   try {
     const pixelId = process.env.FB_PIXEL_ID || process.env.VITE_FB_PIXEL_ID || DEFAULT_PIXEL_ID;
     const accessToken = process.env.FB_ACCESS_TOKEN || process.env.VITE_FB_ACCESS_TOKEN || DEFAULT_ACCESS_TOKEN;
-    const testEventCode = req.body?.test_event_code || process.env.FB_TEST_EVENT_CODE || process.env.VITE_FB_TEST_EVENT_CODE || DEFAULT_TEST_CODE;
+
+    // Only send test_event_code if explicitly provided in request body or explicit FB_TEST_EVENT_CODE
+    // NEVER fall back to stale or hardcoded test codes, as invalid codes cause Meta to drop events from Test Events
+    const rawTestCode = req.body?.test_event_code || process.env.FB_TEST_EVENT_CODE || null;
+    const testEventCode = (typeof rawTestCode === 'string' && rawTestCode.trim().length > 0 && rawTestCode.trim() !== 'undefined' && rawTestCode.trim() !== 'null')
+      ? rawTestCode.trim()
+      : null;
 
     if (!pixelId || !accessToken) {
       return res.status(500).json({
@@ -123,8 +142,12 @@ export default async function handler(req, res) {
     // 3. Normalize & Hash User Data
     const formattedUserData = {};
 
-    if (clientIp) formattedUserData.client_ip_address = clientIp;
-    if (clientUserAgent) formattedUserData.client_user_agent = clientUserAgent;
+    if (clientIp && isPublicIp(clientIp)) {
+      formattedUserData.client_ip_address = clientIp;
+    }
+    if (clientUserAgent) {
+      formattedUserData.client_user_agent = clientUserAgent;
+    }
 
     // FBP and FBC (Must NOT be hashed)
     if (user_data.fbp) formattedUserData.fbp = String(user_data.fbp);
