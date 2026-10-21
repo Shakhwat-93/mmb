@@ -13,8 +13,12 @@ import AnnouncementBar from './components/AnnouncementBar';
 
 function App() {
   const [isOrderSuccess, setIsOrderSuccess] = React.useState(false);
+  const hasTrackedViewRef = React.useRef(false);
 
   React.useEffect(() => {
+    if (hasTrackedViewRef.current) return;
+    hasTrackedViewRef.current = true;
+
     // Push GA4 view_item event on page load
     const w = window as any;
     w.dataLayer = w.dataLayer || [];

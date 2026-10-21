@@ -5,6 +5,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/meta-conversions",
+      "destination": "/api/meta-conversions"
+    },
+    {
       "source": "/api/supabase/rest/v1/orders",
       "destination": "/api/supabase/rest/v1/orders"
     },
