@@ -25,7 +25,8 @@
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '1015807421436461');
-    fbq('track', 'PageView');
+    var testCode = (new URLSearchParams(window.location.search).get('test_event_code')) || 'TEST5589';
+    fbq('track', 'PageView', {}, testCode ? { test_event_code: testCode } : {});
     </script>
     <!-- End Meta Pixel Code -->
 

@@ -326,7 +326,7 @@ const CheckoutForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       if (error) throw error;
       
       // Trigger Purchase event (Browser Pixel & Conversions API)
-      trackFacebookEvent('Purchase', finalOrderId, {
+      await trackFacebookEvent('Purchase', finalOrderId, {
         phone: phone,
         name: name,
         ipAddress: customerIp.current
@@ -336,7 +336,7 @@ const CheckoutForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         content_ids: ['smb-bag'],
         content_type: 'product',
         currency: 'BDT',
-        value: total,
+        value: Number(total),
         num_items: totalItems
       });
       
