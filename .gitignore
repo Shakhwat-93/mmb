@@ -4,3 +4,6 @@ dist/
 .devserver.out.log
 .devserver.err.log
 *.tsbuildinfo
+.env
+.env.local
+.preview.*
